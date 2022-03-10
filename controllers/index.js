@@ -13,9 +13,14 @@ module.exports = {
 
     updateCategory: async (req, res) => {
         try {
-            let result = await models.categories.update(req.body,
+            let updated = await models.categories.update(req.body,
                 { where: { id: req.params.id } });
-            if (result) return res.json({ success: true, data: result });
+            if (updated[0] == 1) {
+                let result = await models.categories.findOne({ where: { id: req.params.id } })
+                if (result) return res.json({ success: true, data: result });
+            } else {
+                return res.json({ success: false, data: "Something went wrong!" });
+            }
         } catch (error) {
             console.log(error);
             res.json({ success: false, data: error });
@@ -35,7 +40,11 @@ module.exports = {
     getCategoryById: async (req, res) => {
         try {
             let result = await models.categories.findOne({ where: { id: req.params.id } });
-            if (result) return res.json({ success: true, data: result });
+            if (result) { 
+                return res.json({ success: true, data: result });
+            } else {
+                return res.json({ success: false, data: "Something went wrong" });
+            }
         } catch (error) {
             console.log(error);
             res.json({ success: false, data: error });
