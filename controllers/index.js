@@ -3,8 +3,24 @@ const models = require("../models");
 module.exports = {
     createCategory: async (req, res) => {
         try {
-            let result = await models.categories.create(req.body);
-            if (result) return res.json({ success: true, data: result });
+            let result;
+            if (req.file) {
+                result = await models.categories.create({
+                    categoryName: req.body.categoryName,
+                    description: req.body.description,
+                    image: req.file.buffer
+                });
+            } else {
+                result = await models.categories.create({
+                    categoryName: req.body.categoryName,
+                    description: req.body.description,
+                });
+            }
+            if (result) {
+                return res.json({ success: true, data: result });
+            } else {
+                return res.json({ success: false, data: "Something went wrong" });
+            }
         } catch (error) {
             console.log(error);
             res.json({ success: false, data: error });
@@ -30,7 +46,17 @@ module.exports = {
     getAllCategories: async (req, res) => {
         try {
             let result = await models.categories.findAll();
-            if (result) return res.json({ success: true, data: result });
+            if (result) {
+                result.forEach(item => {
+                    if (item.image) {
+                        const imageString = item.image.toString('base64');
+                        item['image'] = imageString;
+                    }
+                });
+                return res.json({ success: true, data: result });
+            } else {
+                return res.json({ success: false, data: "Something went wrong" });
+            }
         } catch (error) {
             console.log(error);
             res.json({ success: false, data: error });
@@ -40,7 +66,7 @@ module.exports = {
     getCategoryById: async (req, res) => {
         try {
             let result = await models.categories.findOne({ where: { id: req.params.id } });
-            if (result) { 
+            if (result) {
                 return res.json({ success: true, data: result });
             } else {
                 return res.json({ success: false, data: "Something went wrong" });
